@@ -1,0 +1,142 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.Vector;
+
+
+
+class Graph{
+	
+	private Node[] nodes;
+	private long[] dist;
+	private long[] wheigts;
+	private int[] prev;
+	
+	public Graph(int n, int m, int[] a, int[] b, long[] w){
+		//wrong input
+		if(a.length != m || b.length != m || w.length != m) a[m+1] = 0;
+		
+		nodes = new Node[n];
+		dist = new long[n];
+		wheigts = new long[n];
+		prev = new int[n];
+		for (int i = 0; i < n; i++) {
+			nodes[i] = new Node(i);
+		}
+		
+		for (int i = 0; i < m; i++) {
+			nodes[a[i]].addEdge(new Edge(nodes[b[i]], w[i]));
+		}
+	}
+	
+	public Graph(int n, int m, int[] a, int[] b, long[] w, boolean bidirectionalEdges){
+		//wrong input
+		if(a.length != m || b.length != m || w.length != m) a[m+1] = 0;
+		
+		nodes = new Node[n];
+		dist = new long[n];
+		wheigts = new long[n];
+		prev = new int[n];
+		for (int i = 0; i < n; i++) {
+			nodes[i] = new Node(i);
+		}
+		
+		for (int i = 0; i < m; i++) {
+			nodes[a[i]].addEdge(new Edge(nodes[b[i]], w[i]));
+		}
+		
+		if(bidirectionalEdges) {
+			for (int i = 0; i < m; i++) {
+				nodes[b[i]].addEdge(new Edge(nodes[a[i]], w[i]));
+			}
+		}
+	}
+	
+	public void generateDijkstraTables(int s) {
+		HashMap<Integer, Long> pq = new HashMap<>();
+		
+		for (int i = 0; i < dist.length; i++) {
+			dist[i] = Long.MAX_VALUE;
+		}
+		dist[s] = 0;
+		pq.put(s, 0L);
+		while(pq.size() != 0) {
+			Iterator<Integer> it = pq.keySet().iterator();
+			HashMap<Integer, Long> c = new HashMap<>();
+			while(it.hasNext()) {
+				int k = it.next();
+				for(Edge n: nodes[k].getEdges()) {
+					if(dist[n.t.i] < pq.get(k) + n.w) {
+						continue;
+					}
+					dist[n.t.i] = pq.get(k) + n.w;
+					prev[n.t.i] = k;
+					wheigts[n.t.i] = n.w;
+					c.put(n.t.i, pq.get(k) + n.w);
+
+				}
+				
+			}
+			pq = c;
+		}
+		
+	}
+	
+	
+	//start not included
+	public ArrayList<Integer> getDijkstraPath(int t) {
+		if(dist[t] == 0) return new ArrayList<Integer>();
+		
+		ArrayList<Integer> e = getDijkstraPath(prev[t]);
+		e.add(t);
+		return e;
+	}
+	
+	public long getDijkstraPathDistance(int t) {
+
+		return dist[t];
+		
+	}
+	
+	public ArrayList<Long> getDijkstraPathWeigts(int t) {
+		if(dist[t] == 0) return new ArrayList<Long>();
+		
+		ArrayList<Long> e = getDijkstraPathWeigts(prev[t]);
+		e.add(wheigts[t]);
+		return e;
+	}
+	
+	
+}
+
+class Node{
+	
+	final int i;
+	final ArrayList<Edge> edges = new ArrayList<>();
+	
+	public Node(int i) {
+		this.i = i;
+	}
+	
+	public void addEdge(Edge e) {
+		edges.add(e);
+	}
+	
+	public ArrayList<Edge> getEdges() {
+		return edges;
+	}
+	
+}
+
+class Edge{
+	
+	final Node t;
+	final long w;
+	
+	public Edge(Node t, long w) {
+		this.t = t;
+		this.w = w;
+	}
+	
+}
